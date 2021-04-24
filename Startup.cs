@@ -12,11 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using MiddlewareExperiments.Middlewares;
+using APITemplate.Middlewares;
 using Serilog;
 using Serilog.Events;
 
-namespace MiddlewareExperiments
+namespace APITemplate
 {
     public class Startup
     {
@@ -63,7 +63,7 @@ namespace MiddlewareExperiments
                 };
             });
 
-            app.UseMiddleware<LoggingMiddleware>();
+            app.UseMiddleware<ResponseLog>();
             
             app.UseHttpsRedirection();
 

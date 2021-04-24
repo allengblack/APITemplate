@@ -1,6 +1,6 @@
 using System;
 
-namespace MiddlewareExperiments
+namespace APITemplate
 {
     public class Resource
     {
