@@ -23,20 +23,17 @@ namespace APITemplate.Middlewares
 
             try
             {
-                using (var memStream = new MemoryStream())
-                {
-                    context.Response.Body = memStream;
+                using var memStream = new MemoryStream();
+                context.Response.Body = memStream;
 
-                    await _next(context);
-                    memStream.Position = 0;
-                    string responseBody = new StreamReader(memStream).ReadToEnd();
+                await _next(context);
+                memStream.Position = 0;
+                string responseBody = new StreamReader(memStream).ReadToEnd();
 
-                    _logger.LogInformation(responseBody);
+                _logger.LogInformation("Response body: {@ResponseBody}", responseBody);
 
-                    memStream.Position = 0;
-                    await memStream.CopyToAsync(originalBody);
-                }
-
+                memStream.Position = 0;
+                await memStream.CopyToAsync(originalBody);
             }
             catch (Exception ex)
             {

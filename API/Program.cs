@@ -14,7 +14,7 @@ namespace APITemplate
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .Enrich.FromLogContext()
-            .WriteTo.Debug(new RenderedCompactJsonFormatter())
+            .WriteTo.Console()
             .CreateLogger();
 
             try

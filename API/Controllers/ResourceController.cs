@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +9,6 @@ namespace APITemplate.Controllers
     [Route("api/[controller]")]
     public class ResourcesController: ControllerBase
     {
-        private readonly ILogger<ResourcesController> _logger;
-
-        public ResourcesController(ILogger<ResourcesController> logger)
-        {
-            _logger = logger;
-        }
-
         [HttpGet]
         public ActionResult<IEnumerable<Resource>> Get()
         {
