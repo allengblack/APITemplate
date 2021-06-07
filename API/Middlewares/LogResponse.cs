@@ -6,21 +6,20 @@ using System.Threading.Tasks;
 
 namespace APITemplate.Middlewares
 {
-    public class ResponseLog
+    public class LogResponse
     {
         private readonly RequestDelegate _next;
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger<LogResponse> _logger;
 
-        public ResponseLog(RequestDelegate next, ILoggerFactory loggerFactory)
+        public LogResponse(RequestDelegate next, ILogger<LogResponse> logger)
         {
             _next = next;
-            _loggerFactory = loggerFactory;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
             Stream originalBody = context.Response.Body;
-            var _logger = _loggerFactory.CreateLogger("Response Logs");
 
             try
             {
