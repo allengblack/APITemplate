@@ -1,5 +1,5 @@
-A .NET 5+ API Template to help me get started quickly with projects.
-The aim is to keep this up-to-date but ultimately, I'll probably jsut stick with LTS versions.
+# APITemplate
+A Dotnet 5.0 API Template to help me (or anyone who's interested) get started with a new project quickly. I plan to always keep this and all dependencies up to date as new Dotnet versions get released.
 
 This contains the following libraries:
-- [x] Entity Framework Core
+- [x] EF Core
