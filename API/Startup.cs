@@ -1,71 +1,92 @@
-using APITemplate.Middlewares;
+using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using Serilog;
 using Serilog.Events;
 
-namespace APITemplate
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    public class Startup
+    c.SwaggerDoc("v1",
+        new OpenApiInfo {
+            Title = "Middleware Experiments",
+            Version = "v1"
+        });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+        // Edit this line
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Template Ting v1"));
+}
+
+app.UseSerilogRequestLogging(options =>
     {
-        public Startup(IConfiguration configuration)
+        // Customize the message template
+        options.MessageTemplate = "Handled {RequestPath}";
+
+        // Emit debug-level events instead of the defaults
+        options.GetLevel = (httpContext, elapsed, ex) =>
+            LogEventLevel.Debug;
+
+        // Attach additional properties to the request completion event
+        options.EnrichDiagnosticContext = (
+            diagnosticContext,
+            httpContext
+        ) =>
         {
-            Configuration = configuration;
-        }
+            diagnosticContext
+                .Set("RequestHost", httpContext.Request.Host.Value);
+            diagnosticContext
+                .Set("RequestScheme", httpContext.Request.Scheme);
+        };
+    });
 
-        public IConfiguration Configuration { get; }
+// app.UseMiddleware<LogResponse>();
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Middleware Experiments", Version = "v1" });
-            });
-        }
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
+app.UseEndpoints(e =>
+{
+    e.MapMetrics();
+    e.MapControllers();
+});
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Middleware Experiments v1"));
-            }
+Log.Logger = new LoggerConfiguration()
+                 .MinimumLevel
+                 .Override("Microsoft", LogEventLevel.Information)
+                 .Enrich
+                 .FromLogContext()
+                 .WriteTo
+                 .Console()
+                 .CreateLogger();
 
-            app.UseSerilogRequestLogging(options => {
-               // Customize the message template
-               options.MessageTemplate = "Handled {RequestPath}";
-                
-               // Emit debug-level events instead of the defaults
-               options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Debug;
-                
-               // Attach additional properties to the request completion event
-               options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
-               {
-                   diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
-                   diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-               };
-            });
-
-            app.UseMiddleware<LogResponse>();
-
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-        }
-    }
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Host terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
 }
