@@ -435,4 +435,6 @@ $RECYCLE.BIN/
 ##
 ## Visual Studio Code
 ##
-.vscode/*
+.vscode/
+prometheus_db/
+grafana_db/

@@ -2,23 +2,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog;
 
 namespace APITemplate.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ResourcesController: ControllerBase
+public class ResourcesController: BaseController
 {
+    public ResourcesController(ILogger logger) : base(logger)
+    {}
+    
     [HttpGet]
-    public ActionResult<IEnumerable<Resource>> Get()
+    public ActionResult Get()
     {
         var rng = new Random();
-        var res = Enumerable.Range(1, 5).Select(index => new Resource
+        var data = Enumerable.Range(1, 5).Select(index => new Resource
         {
             Id = Guid.NewGuid(),
             Date = DateTime.Now.AddDays(index)
-        });
-
-        return Ok(res);
+        }).ToArray();
+        
+        Logger.Information("Returning data {@Data}", data);
+        return Ok(data);
     }
 }
